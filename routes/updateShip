@@ -1,0 +1,32 @@
+const express = require("express");
+const router = express.Router();
+let Ship = require("../models/Ship");
+
+/**
+ * Run this code when receiving a PATCH request at /updateShip
+ */
+router.patch("/updateShip/", function(req, res){
+    //error if no ship name is provided
+    if(!req.body.name){
+        res.status(400).send({error: "No ship name provided"});
+    }
+    else{
+        //look up document to be updated in MongoDB by name
+        Ship.findOneAndUpdate({name: req.body.name}, {$set: req.body}, {new: true}, function(error,doc){
+            //error finding the ship
+            if(error){
+                res.status(500).send({error: "Error finding ship"});
+            }
+            //ship does not exist
+            else if(!doc){
+                res.status(404).send({error: "Ship does not exist"});
+            }
+            //document for ship exists, update ship and return it
+            else{
+                res.send(doc);
+            }
+        });
+    }
+});
+
+module.exports = router;
